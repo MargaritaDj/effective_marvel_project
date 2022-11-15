@@ -1,6 +1,6 @@
 package com.example.marvelproject.screens
 
-import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -20,8 +20,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.marvelproject.Hero
+import coil.compose.AsyncImage
+import com.example.marvelproject.R
 import com.example.marvelproject.navigation.Routes
+import com.example.marvelproject.network.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
@@ -56,10 +58,11 @@ fun CardHero(
             }
     )
     {
-
-        Image(
-            painter = painterResource(id = item.imageID),
+        AsyncImage(
+            model = item.pathImage,
             contentDescription = item.name,
+            placeholder = painterResource(R.drawable.logo_placeholder),
+            error = painterResource(R.drawable.hero),
             contentScale = ContentScale.Crop
         )
 
@@ -71,7 +74,8 @@ fun CardHero(
                 text = item.name,
                 color = Color.White,
                 fontSize = paramsOrientation.fontSizeAboutHero.sp,
-                fontWeight = FontWeight(paramsOrientation.fontWeightTitle)
+                fontWeight = FontWeight(paramsOrientation.fontWeightTitle),
+                modifier = Modifier.background(Color.Black)
             )
         }
     }

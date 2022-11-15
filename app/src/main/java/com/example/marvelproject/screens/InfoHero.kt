@@ -1,37 +1,11 @@
 package com.example.marvelproject.screens
 
-import android.content.res.Configuration
-import android.os.Bundle
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.Column
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import coil.compose.AsyncImage
-import com.example.marvelproject.Hero
-import com.example.marvelproject.ListHeroes
-import com.example.marvelproject.R
-import com.example.marvelproject.navigation.Routes
 
 @Composable
 fun InfoHero(navController: NavHostController, indexHero: Int?) {
+    /*
     val hero = ListHeroes().listHeroes[indexHero ?: 0]
 
     Box(
@@ -44,6 +18,7 @@ fun InfoHero(navController: NavHostController, indexHero: Int?) {
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
+           /*
             AsyncImage(
                 model = hero.imageLink,
                 contentDescription = hero.name,
@@ -59,7 +34,7 @@ fun InfoHero(navController: NavHostController, indexHero: Int?) {
                         400.dp
                     }
                 )
-            )
+            )*/
         }
         PrintDescriptionAboutHero(navController, hero, indexHero)
 
@@ -105,13 +80,14 @@ fun PrintDescriptionAboutHero(navController: NavHostController, hero: Hero, inde
                 fontWeight = FontWeight(fontWeightTitle)
             )
 
+            /*
             Text(
                 text = hero.info,
                 color = Color.White,
                 fontSize = sizeInfo.sp,
                 overflow = TextOverflow.Clip,
                 softWrap = true
-            )
+            )*/
         }
-    }
+    }*/
 }

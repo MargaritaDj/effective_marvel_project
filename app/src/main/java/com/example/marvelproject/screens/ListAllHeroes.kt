@@ -6,13 +6,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -36,9 +30,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.marvelproject.Hero
-import com.example.marvelproject.ListHeroes
 import com.example.marvelproject.R
+import com.example.marvelproject.network.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
 import com.example.marvelproject.orientation.ParamsOrientationLandscape
 import com.example.marvelproject.orientation.ParamsOrientationPortrait
@@ -48,9 +41,9 @@ import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
 import dev.chrisbanes.snapper.rememberLazyListSnapperLayoutInfo
 
-
 @Composable
-fun ListAllHeroes(navController: NavHostController, currentIndex: Int?) {
+fun ListAllHeroes(listHeroes: List<Hero>, navController: NavHostController, currentIndex: Int?, isError: Boolean) {
+
     Column(
         Modifier
             .fillMaxSize()
@@ -58,7 +51,7 @@ fun ListAllHeroes(navController: NavHostController, currentIndex: Int?) {
     ) {
         Logo(R.drawable.marvel)
         Title("Choose your hero")
-        ListHeroes(ListHeroes().listHeroes, navController, currentIndex)
+        ListHeroes(listHeroes, navController, currentIndex, isError)
     }
 }
 
@@ -82,7 +75,7 @@ fun Logo(logoID: Int) {
 @Composable
 fun Title(title: String) {
     val paramsOrientation: ParamsOrientation = checkOrientation()
-    if(!paramsOrientation.printTitle)
+    if (!paramsOrientation.printTitle)
         return
 
     Box(
@@ -101,7 +94,8 @@ fun Title(title: String) {
 
 @OptIn(ExperimentalSnapperApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, currentIndexHero: Int?) {
+fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, currentIndexHero: Int?, isError: Boolean) {
+
     val partHeight = 0.3f
     val shapeTriangleBackground = GenericShape { size: Size, _ ->
         val width = size.width
@@ -118,22 +112,23 @@ fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, current
     val snappingLayout = remember(lazyListState) { SnapLayoutInfoProvider(lazyListState) }
 
     val paramsOrientation: ParamsOrientation = checkOrientation()
-    val paddingCenterCard = (LocalConfiguration.current.screenWidthDp - paramsOrientation.widthCardHero) / 2
+    val paddingCenterCard =
+        (LocalConfiguration.current.screenWidthDp - paramsOrientation.widthCardHero) / 2
 
     val colorBackgroundHero = remember {
         mutableStateOf(DarkRed)
     }
 
-    val currentHero = rememberSaveable{
+    val currentHero = rememberSaveable {
         mutableStateOf(currentIndexHero ?: 0)
     }
 
-    LaunchedEffect(Unit){
+    LaunchedEffect(Unit) {
         lazyListState.scrollToItem(currentHero.value)
     }
 
     LaunchedEffect(lazyListState.isScrollInProgress) {
-        if (!lazyListState.isScrollInProgress) {
+        if (listHeroes.isNotEmpty() && !lazyListState.isScrollInProgress) {
             val currentIndex = layoutInfo.currentItem?.index ?: 0
 
             colorBackgroundHero.value =
@@ -143,6 +138,9 @@ fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, current
         }
     }
 
+    if (isError) {
+       ErrorConnection(paramsOrientation)
+    }
 
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
