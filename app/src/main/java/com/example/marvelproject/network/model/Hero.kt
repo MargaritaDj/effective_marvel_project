@@ -7,7 +7,7 @@ import com.squareup.moshi.Json
 data class Hero(
     val id: String,
     val name : String,
-    val description : String,
+    var description : String = "I am $name",
     val pathImage : String,
     var colorBackground : Color = DarkRed
 )

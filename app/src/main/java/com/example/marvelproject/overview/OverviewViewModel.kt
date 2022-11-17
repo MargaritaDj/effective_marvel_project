@@ -6,11 +6,13 @@ import androidx.lifecycle.viewModelScope
 import com.example.marvelproject.network.MarvelApi
 import com.example.marvelproject.network.dto.HeroDtoResponse
 import kotlinx.coroutines.launch
+import java.net.UnknownHostException
 
 class OverviewViewModel : ViewModel() {
 
     val status = MutableLiveData<String>()
     val heroesListResponse = MutableLiveData<HeroDtoResponse>()
+    val heroResponse = MutableLiveData<HeroDtoResponse>()
 
     init {
         getHeroes()
@@ -21,9 +23,16 @@ class OverviewViewModel : ViewModel() {
             try {
                 heroesListResponse.value = MarvelApi.retrofitService.getHeroes()
                 status.value = "Success"
-            } catch (e: Exception) {
+            } catch (e: UnknownHostException) {
                 status.value = "Error: ${e.message}"
+                println(status.value)
             }
+        }
+    }
+
+    fun getHeroById(idHero: String?) {
+        viewModelScope.launch {
+            heroResponse.value = MarvelApi.retrofitService.getHeroById(idHero)
         }
     }
 }

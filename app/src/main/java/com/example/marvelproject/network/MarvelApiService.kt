@@ -8,10 +8,12 @@ import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import retrofit2.http.Path
 import retrofit2.http.Query
 import java.time.ZoneOffset
 
-
+private const val API_KEY = "436bc8f71067511b49988b64e64f2200"
+private const val HASH = "617aa3b6e273108093ffe440c9e08d19"
 private const val BASE_URL =
     "https://gateway.marvel.com/"
 
@@ -28,8 +30,16 @@ interface MarvelApiService{
     suspend fun getHeroes(
         @Query("limit") limit : Int = 30,
         @Query("ts") ts : String = "1",
-        @Query("apikey") apikey : String = "436bc8f71067511b49988b64e64f2200",
-        @Query("hash") hash : String = "617aa3b6e273108093ffe440c9e08d19",
+        @Query("apikey") apikey : String = API_KEY,
+        @Query("hash") hash : String = HASH,
+    ): HeroDtoResponse
+
+    @GET("/v1/public/characters/{id}")
+    suspend fun getHeroById(
+        @Path("id") id: String?,
+        @Query("ts") ts : String = "1",
+        @Query("apikey") apikey : String = API_KEY,
+        @Query("hash") hash : String = HASH
     ): HeroDtoResponse
 }
 

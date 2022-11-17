@@ -8,6 +8,7 @@ import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
 import com.example.marvelproject.network.model.Hero
+import com.example.marvelproject.overview.OverviewViewModel
 import com.squareup.moshi.Json
 
 data class Result(
@@ -17,7 +18,7 @@ data class Result(
     @Json(name = "thumbnail") val thumbnail: Thumbnail,
 ) {
 
-    fun toHero(context: Context): Hero {
+    fun toHero(context: Context?): Hero {
         val path = thumbnail.path.substring(4)
         val extension = thumbnail.extension
         val url = "https$path.$extension"
@@ -25,32 +26,39 @@ data class Result(
         val hero = Hero(
             id = id,
             name = name,
-            description = description,
-            pathImage = url)
+            pathImage = url
+        )
 
-        getColorBackgroundImage(context, url, hero)
+        if(description != ""){
+            hero.description = description
+        }
+
+
+        getColorBackgroundImage(context, hero)
 
         return hero
     }
 
 
-    private fun getColorBackgroundImage(context: Context, urlImage: String, hero: Hero){
-        val loader = ImageLoader(context)
-        val request = ImageRequest.Builder(context)
-            .data(urlImage)
-            .target(
-                onSuccess = { res ->
-                    val bitmap = (res as BitmapDrawable).bitmap
-                    Palette.from(bitmap).generate { palette ->
-                        val colorArgb = palette?.darkVibrantSwatch?.rgb ?: hero.colorBackground.toArgb()
-                        hero.colorBackground = Color(colorArgb)
+
+    private fun getColorBackgroundImage(context: Context?, hero: Hero) {
+        if (context != null) {
+            val loader = ImageLoader(context)
+            val request = ImageRequest.Builder(context)
+                .data(hero.pathImage)
+                .target(
+                    onSuccess = { res ->
+                        val bitmap = (res as BitmapDrawable).bitmap
+                        Palette.from(bitmap).generate { palette ->
+                            val colorArgb =
+                                palette?.darkVibrantSwatch?.rgb ?: hero.colorBackground.toArgb()
+                            hero.colorBackground = Color(colorArgb)
+                        }
                     }
-                }
-            )
-            .allowHardware(false)
-            .build()
-        loader.enqueue(request)
+                )
+                .allowHardware(false)
+                .build()
+            loader.enqueue(request)
+        }
     }
-
-
 }

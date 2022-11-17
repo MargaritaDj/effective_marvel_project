@@ -1,52 +1,89 @@
 package com.example.marvelproject.screens
 
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Column
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
+import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
+import com.example.marvelproject.overview.OverviewViewModel
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.example.marvelproject.R
+import com.example.marvelproject.navigation.Routes
+import com.example.marvelproject.network.model.Hero
 
 @Composable
-fun InfoHero(navController: NavHostController, indexHero: Int?) {
-    /*
-    val hero = ListHeroes().listHeroes[indexHero ?: 0]
+fun InfoHero(navController: NavHostController, id: String?) {
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-    ) {
+    val viewModel = OverviewViewModel()
+    viewModel.getHeroById(id)
+    val hero: MutableState<Hero?> = remember {
+        mutableStateOf(null)
+    }
 
+    viewModel.heroResponse.observeForever {
+        hero.value = viewModel.heroResponse.value?.data?.results?.map { it.toHero(null) }?.first()
+    }
+
+    if (hero.value != null) {
         Box(
             modifier = Modifier
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
+                .fillMaxSize()
         ) {
-           /*
-            AsyncImage(
-                model = hero.imageLink,
-                contentDescription = hero.name,
-                placeholder = painterResource(R.drawable.logo_placeholder),
-                error = painterResource(R.drawable.hero),
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(
-                    if (LocalConfiguration.current.orientation != Configuration.ORIENTATION_LANDSCAPE) {
-                        LocalConfiguration.current.screenWidthDp.dp
-                        LocalConfiguration.current.screenHeightDp.dp
-                    } else {
-                        LocalConfiguration.current.screenWidthDp.dp
-                        400.dp
-                    }
-                )
-            )*/
-        }
-        PrintDescriptionAboutHero(navController, hero, indexHero)
 
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                AsyncImage(
+                    model = hero.value?.pathImage,
+                    contentDescription = hero.value?.name,
+                    placeholder = painterResource(R.drawable.logo_placeholder),
+                    error = painterResource(R.drawable.hero),
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.size(
+                        LocalConfiguration.current.screenWidthDp.dp,
+                        LocalConfiguration.current.screenHeightDp.dp
+                    )
+                )
+            }
+            PrintDescriptionAboutHero(navController, hero.value, id)
+        }
     }
 }
 
 @Composable
-fun PrintDescriptionAboutHero(navController: NavHostController, hero: Hero, indexHero: Int?) {
+fun PrintDescriptionAboutHero(navController: NavHostController, hero: Hero?, id: String?) {
 
     val fontWeightTitle = 800
     val sizeTitle = 40
     val sizeInfo = 20
+
+    val offsetXY = 2f
+    val blurRadius = 10f
 
     Box(
         modifier = Modifier
@@ -55,7 +92,7 @@ fun PrintDescriptionAboutHero(navController: NavHostController, hero: Hero, inde
     ) {
         IconButton(
             onClick = {
-                navController.navigate(Routes.ListHeroes.route + "/$indexHero")
+                navController.navigate(Routes.ListHeroes.route + "/$id")
             }
         ) {
             Icon(
@@ -74,20 +111,21 @@ fun PrintDescriptionAboutHero(navController: NavHostController, hero: Hero, inde
     ) {
         Column {
             Text(
-                text = hero.name,
+                text = hero?.name ?: "",
                 color = Color.White,
                 fontSize = sizeTitle.sp,
-                fontWeight = FontWeight(fontWeightTitle)
+                fontWeight = FontWeight(fontWeightTitle),
+                style = TextStyle(shadow = Shadow(Color.Black, Offset(offsetXY, offsetXY), blurRadius))
             )
 
-            /*
             Text(
-                text = hero.info,
+                text = hero?.description ?: "",
                 color = Color.White,
                 fontSize = sizeInfo.sp,
                 overflow = TextOverflow.Clip,
-                softWrap = true
-            )*/
+                softWrap = true,
+                style = TextStyle(shadow = Shadow(Color.Black, Offset(offsetXY, offsetXY), blurRadius))
+            )
         }
-    }*/
+    }
 }

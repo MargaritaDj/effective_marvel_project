@@ -6,7 +6,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.snapping.SnapLayoutInfoProvider
 import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyRow
@@ -23,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -42,16 +49,22 @@ import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
 import dev.chrisbanes.snapper.rememberLazyListSnapperLayoutInfo
 
 @Composable
-fun ListAllHeroes(listHeroes: List<Hero>, navController: NavHostController, currentIndex: Int?, isError: Boolean) {
-
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(color = DarkGrey)
-    ) {
-        Logo(R.drawable.marvel)
-        Title("Choose your hero")
-        ListHeroes(listHeroes, navController, currentIndex, isError)
+fun ListAllHeroes(
+    listHeroes: List<Hero>,
+    navController: NavHostController,
+    id: String?,
+    isError: Boolean
+) {
+    if (listHeroes.isNotEmpty() || isError) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(color = DarkGrey)
+        ) {
+            Logo(R.drawable.marvel)
+            Title("Choose your hero")
+            ListHeroes(listHeroes, navController, id, isError)
+        }
     }
 }
 
@@ -94,33 +107,32 @@ fun Title(title: String) {
 
 @OptIn(ExperimentalSnapperApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, currentIndexHero: Int?, isError: Boolean) {
-
-    val partHeight = 0.3f
-    val shapeTriangleBackground = GenericShape { size: Size, _ ->
-        val width = size.width
-        val height = size.height
-
-        moveTo(0f, height)
-        lineTo(width, height)
-        lineTo(width, height * partHeight)
-        close()
-    }
-
+fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController, id: String?, isError: Boolean)
+{
+    val shapeTriangleBackground = triangleBackground()
     val lazyListState: LazyListState = rememberLazyListState()
     val layoutInfo: LazyListSnapperLayoutInfo = rememberLazyListSnapperLayoutInfo(lazyListState)
     val snappingLayout = remember(lazyListState) { SnapLayoutInfoProvider(lazyListState) }
 
     val paramsOrientation: ParamsOrientation = checkOrientation()
-    val paddingCenterCard =
-        (LocalConfiguration.current.screenWidthDp - paramsOrientation.widthCardHero) / 2
+    val paddingCenterCard = (LocalConfiguration.current.screenWidthDp - paramsOrientation.widthCardHero) / 2
 
-    val colorBackgroundHero = remember {
-        mutableStateOf(DarkRed)
+    val colorBackgroundHeroInt = rememberSaveable {
+        mutableStateOf(DarkRed.toArgb())
+    }
+
+    val listHeroes = rememberSaveable {
+        mutableStateOf(listHeroesResponse)
     }
 
     val currentHero = rememberSaveable {
-        mutableStateOf(currentIndexHero ?: 0)
+        var currentIndexHero = 0
+        for (hero in listHeroes.value) {
+            if (hero.id == id) {
+                currentIndexHero = listHeroes.value.indexOf(hero)
+            }
+        }
+        mutableStateOf(currentIndexHero)
     }
 
     LaunchedEffect(Unit) {
@@ -128,44 +140,36 @@ fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, current
     }
 
     LaunchedEffect(lazyListState.isScrollInProgress) {
-        if (listHeroes.isNotEmpty() && !lazyListState.isScrollInProgress) {
+        if (listHeroes.value.isNotEmpty() && !lazyListState.isScrollInProgress) {
             val currentIndex = layoutInfo.currentItem?.index ?: 0
 
-            colorBackgroundHero.value =
-                listHeroes[currentIndex].colorBackground
+            colorBackgroundHeroInt.value =
+                listHeroes.value[currentIndex].colorBackground.toArgb()
 
             currentHero.value = currentIndex
         }
     }
 
     if (isError) {
-       ErrorConnection(paramsOrientation)
+        ErrorConnection(paramsOrientation)
     }
 
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxSize()
-            .background(shape = shapeTriangleBackground, color = colorBackgroundHero.value),
+            .background(shape = shapeTriangleBackground, color = Color(colorBackgroundHeroInt.value)),
         state = lazyListState,
         flingBehavior = rememberSnapFlingBehavior(snappingLayout),
         contentPadding = PaddingValues(horizontal = (paddingCenterCard.dp))
     )
     {
         itemsIndexed(
-            listHeroes,
+            listHeroes.value
         ) { index, item ->
-            CardHero(
-                index,
-                item,
-                paramsOrientation,
-                lazyListState,
-                navController,
-                layoutInfo,
-                paddingCenterCard
-            )
+            CardHero(index, item, paramsOrientation, lazyListState, navController,
+                layoutInfo, paddingCenterCard)
         }
-
     }
 }
 
@@ -177,6 +181,20 @@ fun LazyListLayoutInfo.normalizedItemPosition(key: Any, paddingCenterCard: Int):
             (it.offset.toFloat() - center) / (center - paddingCenterCard)
         }
         ?: 0F
+
+fun triangleBackground(): GenericShape {
+    val partHeight = 0.3f
+    val shapeTriangleBackground = GenericShape { size: Size, _ ->
+        val width = size.width
+        val height = size.height
+
+        moveTo(0f, height)
+        lineTo(width, height)
+        lineTo(width, height * partHeight)
+        close()
+    }
+    return shapeTriangleBackground
+}
 
 @Composable
 fun checkOrientation(): ParamsOrientation {
