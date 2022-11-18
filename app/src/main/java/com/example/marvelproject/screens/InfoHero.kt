@@ -31,8 +31,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import com.example.marvelproject.R
+import com.example.marvelproject.database.HeroApplication
+import com.example.marvelproject.database.HeroRepository
 import com.example.marvelproject.navigation.Routes
-import com.example.marvelproject.network.model.Hero
+import com.example.marvelproject.model.Hero
 
 @Composable
 fun InfoHero(navController: NavHostController, id: String?) {

@@ -1,7 +1,7 @@
 package com.example.marvelproject.overview
 
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.viewModelScope
 import com.example.marvelproject.network.MarvelApi
 import com.example.marvelproject.network.dto.HeroDtoResponse
@@ -25,7 +25,6 @@ class OverviewViewModel : ViewModel() {
                 status.value = "Success"
             } catch (e: UnknownHostException) {
                 status.value = "Error: ${e.message}"
-                println(status.value)
             }
         }
     }
@@ -35,4 +34,5 @@ class OverviewViewModel : ViewModel() {
             heroResponse.value = MarvelApi.retrofitService.getHeroById(idHero)
         }
     }
+
 }

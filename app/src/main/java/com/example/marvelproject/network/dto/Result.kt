@@ -7,7 +7,7 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
-import com.example.marvelproject.network.model.Hero
+import com.example.marvelproject.model.Hero
 import com.example.marvelproject.overview.OverviewViewModel
 import com.squareup.moshi.Json
 
@@ -33,13 +33,10 @@ data class Result(
             hero.description = description
         }
 
-
         getColorBackgroundImage(context, hero)
 
         return hero
     }
-
-
 
     private fun getColorBackgroundImage(context: Context?, hero: Hero) {
         if (context != null) {
@@ -51,8 +48,8 @@ data class Result(
                         val bitmap = (res as BitmapDrawable).bitmap
                         Palette.from(bitmap).generate { palette ->
                             val colorArgb =
-                                palette?.darkVibrantSwatch?.rgb ?: hero.colorBackground.toArgb()
-                            hero.colorBackground = Color(colorArgb)
+                                palette?.darkVibrantSwatch?.rgb ?: hero.colorBackground
+                            hero.colorBackground = colorArgb
                         }
                     }
                 )

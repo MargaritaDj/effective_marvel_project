@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.marvelproject.R
-import com.example.marvelproject.network.model.Hero
+import com.example.marvelproject.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
 import com.example.marvelproject.orientation.ParamsOrientationLandscape
 import com.example.marvelproject.orientation.ParamsOrientationPortrait
@@ -52,10 +52,9 @@ import dev.chrisbanes.snapper.rememberLazyListSnapperLayoutInfo
 fun ListAllHeroes(
     listHeroes: List<Hero>,
     navController: NavHostController,
-    id: String?,
-    isError: Boolean
+    id: String?
 ) {
-    if (listHeroes.isNotEmpty() || isError) {
+    if(listHeroes.isNotEmpty()) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -63,9 +62,10 @@ fun ListAllHeroes(
         ) {
             Logo(R.drawable.marvel)
             Title("Choose your hero")
-            ListHeroes(listHeroes, navController, id, isError)
+            ListHeroes(listHeroes, navController, id)
         }
     }
+
 }
 
 @Composable
@@ -107,7 +107,7 @@ fun Title(title: String) {
 
 @OptIn(ExperimentalSnapperApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController, id: String?, isError: Boolean)
+fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController, id: String?)
 {
     val shapeTriangleBackground = triangleBackground()
     val lazyListState: LazyListState = rememberLazyListState()
@@ -144,14 +144,10 @@ fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController,
             val currentIndex = layoutInfo.currentItem?.index ?: 0
 
             colorBackgroundHeroInt.value =
-                listHeroes.value[currentIndex].colorBackground.toArgb()
+                listHeroes.value[currentIndex].colorBackground
 
             currentHero.value = currentIndex
         }
-    }
-
-    if (isError) {
-        ErrorConnection(paramsOrientation)
     }
 
     LazyRow(

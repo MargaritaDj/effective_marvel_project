@@ -16,22 +16,23 @@ import androidx.compose.ui.unit.sp
 import com.example.marvelproject.orientation.ParamsOrientation
 
 @Composable
-fun ErrorConnection(paramsOrientation: ParamsOrientation) {
+fun ErrorConnection() {
     Box(
         modifier = Modifier
             .padding(start = 15.dp, top = 30.dp),
         contentAlignment = Alignment.Center
     ) {
+        val font = 800
         Text(
             buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.Red, fontSize = 35.sp,
-                    fontWeight = FontWeight(paramsOrientation.fontWeightTitle)
+                    fontWeight = FontWeight(font)
                 )
                 ) {
                     append("Error: ")
                 }
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 35.sp,
-                    fontWeight = FontWeight(paramsOrientation.fontWeightTitle)
+                    fontWeight = FontWeight(font)
                 )
                 ) {
                     append("Failed to fetch data. Check internet connection.")
