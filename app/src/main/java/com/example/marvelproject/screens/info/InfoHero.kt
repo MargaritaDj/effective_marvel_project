@@ -1,4 +1,4 @@
-package com.example.marvelproject.screens
+package com.example.marvelproject.screens.info
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Box
@@ -16,7 +16,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
-import com.example.marvelproject.overview.OverviewViewModel
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
@@ -29,22 +28,25 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.example.marvelproject.R
 import com.example.marvelproject.navigation.Routes
-import com.example.marvelproject.network.model.Hero
+import com.example.marvelproject.model.Hero
+import com.example.marvelproject.overview.GetHeroByIdEvent
+import com.example.marvelproject.overview.MainViewModel
 
 @Composable
 fun InfoHero(navController: NavHostController, id: String?) {
 
-    val viewModel = OverviewViewModel()
-    viewModel.getHeroById(id)
     val hero: MutableState<Hero?> = remember {
         mutableStateOf(null)
     }
 
-    viewModel.heroResponse.observeForever {
-        hero.value = viewModel.heroResponse.value?.data?.results?.map { it.toHero(null) }?.first()
+    val mainModel: MainViewModel = hiltViewModel()
+    mainModel.send(GetHeroByIdEvent(id ?: ""))
+    mainModel.stateHeroById.observeForever{ state ->
+        hero.value = state.heroById
     }
 
     if (hero.value != null) {

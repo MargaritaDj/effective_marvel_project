@@ -1,4 +1,4 @@
-package com.example.marvelproject.screens
+package com.example.marvelproject.screens.heroes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -25,7 +25,7 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import com.example.marvelproject.R
 import com.example.marvelproject.navigation.Routes
-import com.example.marvelproject.network.model.Hero
+import com.example.marvelproject.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo

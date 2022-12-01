@@ -1,5 +1,6 @@
-package com.example.marvelproject.screens
+package com.example.marvelproject.screens.heroes
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -16,22 +17,24 @@ import androidx.compose.ui.unit.sp
 import com.example.marvelproject.orientation.ParamsOrientation
 
 @Composable
-fun ErrorConnection(paramsOrientation: ParamsOrientation) {
+fun ErrorConnection() {
     Box(
         modifier = Modifier
-            .padding(start = 15.dp, top = 30.dp),
+            .padding(start = 15.dp, top = 30.dp)
+            .background(Color.DarkGray),
         contentAlignment = Alignment.Center
     ) {
+        val font = 800
         Text(
             buildAnnotatedString {
                 withStyle(style = SpanStyle(color = Color.Red, fontSize = 35.sp,
-                    fontWeight = FontWeight(paramsOrientation.fontWeightTitle)
+                    fontWeight = FontWeight(font)
                 )
                 ) {
                     append("Error: ")
                 }
                 withStyle(style = SpanStyle(color = Color.White, fontSize = 35.sp,
-                    fontWeight = FontWeight(paramsOrientation.fontWeightTitle)
+                    fontWeight = FontWeight(font)
                 )
                 ) {
                     append("Failed to fetch data. Check internet connection.")

@@ -3,31 +3,33 @@ package com.example.marvelproject
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.lifecycle.ViewModelProvider
 import com.example.marvelproject.navigation.AppNavigation
-import com.example.marvelproject.network.model.Hero
-import com.example.marvelproject.overview.OverviewViewModel
+import com.example.marvelproject.model.Hero
+import com.example.marvelproject.overview.GetHeroesEvent
+import com.example.marvelproject.overview.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val viewModel = ViewModelProvider(this)[OverviewViewModel::class.java]
+        val mainModel: MainViewModel by viewModels()
         super.onCreate(savedInstanceState)
+        mainModel.send(GetHeroesEvent())
         setContent {
             val listHeroes = rememberSaveable { mutableStateOf(listOf<Hero>()) }
-            val isError = rememberSaveable { mutableStateOf(false) }
-
-            viewModel.heroesListResponse.observe(this) {
-                listHeroes.value = viewModel.heroesListResponse.value?.data?.results
-                    ?.map{ it.toHero(this) } ?: listOf()
-            }
-            viewModel.status.observe(this) {
-                if(!viewModel.status.value.equals("Success")){
-                    isError.value = true
+            val error = rememberSaveable { mutableStateOf(false) }
+            mainModel.stateAllHeroes.observe(this) { state ->
+                if (state.error) {
+                    error.value = true
+                } else {
+                    listHeroes.value = state.allHeroes
                 }
             }
-            AppNavigation(listHeroes.value, isError.value)
+            AppNavigation(listHeroes.value, error.value, this)
+
         }
     }
 }
