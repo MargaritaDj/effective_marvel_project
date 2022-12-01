@@ -1,6 +1,5 @@
 package com.example.marvelproject.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
@@ -12,16 +11,21 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.marvelproject.Hero
+import coil.compose.AsyncImage
+import com.example.marvelproject.R
 import com.example.marvelproject.navigation.Routes
+import com.example.marvelproject.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
@@ -51,15 +55,19 @@ fun CardHero(
             }
             .clickable {
                 if (index == layoutInfo.currentItem?.index) {
-                    navController.navigate(Routes.InfoCurrentHero.route + "/$index")
+                    navController.navigate(Routes.InfoCurrentHero.route + "/${item.id}")
                 }
             }
     )
     {
+        val offsetXY = 2f
+        val blurRadius = 10f
 
-        Image(
-            painter = painterResource(id = item.imageID),
+        AsyncImage(
+            model = item.pathImage,
             contentDescription = item.name,
+            placeholder = painterResource(R.drawable.logo_placeholder),
+            error = painterResource(R.drawable.hero),
             contentScale = ContentScale.Crop
         )
 
@@ -71,7 +79,9 @@ fun CardHero(
                 text = item.name,
                 color = Color.White,
                 fontSize = paramsOrientation.fontSizeAboutHero.sp,
-                fontWeight = FontWeight(paramsOrientation.fontWeightTitle)
+                fontWeight = FontWeight(paramsOrientation.fontWeightTitle),
+                style = TextStyle(shadow = Shadow(Color.Black,
+                    Offset(offsetXY, offsetXY), blurRadius))
             )
         }
     }

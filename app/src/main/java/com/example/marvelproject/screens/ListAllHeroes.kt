@@ -9,8 +9,8 @@ import androidx.compose.foundation.gestures.snapping.rememberSnapFlingBehavior
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.lazy.LazyListState
@@ -29,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
@@ -36,9 +37,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.example.marvelproject.Hero
-import com.example.marvelproject.ListHeroes
 import com.example.marvelproject.R
+import com.example.marvelproject.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
 import com.example.marvelproject.orientation.ParamsOrientationLandscape
 import com.example.marvelproject.orientation.ParamsOrientationPortrait
@@ -48,18 +48,24 @@ import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
 import dev.chrisbanes.snapper.rememberLazyListSnapperLayoutInfo
 
-
 @Composable
-fun ListAllHeroes(navController: NavHostController, currentIndex: Int?) {
-    Column(
-        Modifier
-            .fillMaxSize()
-            .background(color = DarkGrey)
-    ) {
-        Logo(R.drawable.marvel)
-        Title("Choose your hero")
-        ListHeroes(ListHeroes().listHeroes, navController, currentIndex)
+fun ListAllHeroes(
+    listHeroes: List<Hero>,
+    navController: NavHostController,
+    id: String?
+) {
+    if(listHeroes.isNotEmpty()) {
+        Column(
+            Modifier
+                .fillMaxSize()
+                .background(color = DarkGrey)
+        ) {
+            Logo(R.drawable.marvel)
+            Title("Choose your hero")
+            ListHeroes(listHeroes, navController, id)
+        }
     }
+
 }
 
 @Composable
@@ -82,7 +88,7 @@ fun Logo(logoID: Int) {
 @Composable
 fun Title(title: String) {
     val paramsOrientation: ParamsOrientation = checkOrientation()
-    if(!paramsOrientation.printTitle)
+    if (!paramsOrientation.printTitle)
         return
 
     Box(
@@ -101,18 +107,9 @@ fun Title(title: String) {
 
 @OptIn(ExperimentalSnapperApi::class, ExperimentalFoundationApi::class)
 @Composable
-fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, currentIndexHero: Int?) {
-    val partHeight = 0.3f
-    val shapeTriangleBackground = GenericShape { size: Size, _ ->
-        val width = size.width
-        val height = size.height
-
-        moveTo(0f, height)
-        lineTo(width, height)
-        lineTo(width, height * partHeight)
-        close()
-    }
-
+fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController, id: String?)
+{
+    val shapeTriangleBackground = triangleBackground()
     val lazyListState: LazyListState = rememberLazyListState()
     val layoutInfo: LazyListSnapperLayoutInfo = rememberLazyListSnapperLayoutInfo(lazyListState)
     val snappingLayout = remember(lazyListState) { SnapLayoutInfoProvider(lazyListState) }
@@ -120,54 +117,55 @@ fun ListHeroes(listHeroes: List<Hero>, navController: NavHostController, current
     val paramsOrientation: ParamsOrientation = checkOrientation()
     val paddingCenterCard = (LocalConfiguration.current.screenWidthDp - paramsOrientation.widthCardHero) / 2
 
-    val colorBackgroundHero = remember {
-        mutableStateOf(DarkRed)
+    val colorBackgroundHeroInt = rememberSaveable {
+        mutableStateOf(DarkRed.toArgb())
     }
 
-    val currentHero = rememberSaveable{
-        mutableStateOf(currentIndexHero ?: 0)
+    val listHeroes = rememberSaveable {
+        mutableStateOf(listHeroesResponse)
     }
 
-    LaunchedEffect(Unit){
+    val currentHero = rememberSaveable {
+        var currentIndexHero = 0
+        for (hero in listHeroes.value) {
+            if (hero.id == id) {
+                currentIndexHero = listHeroes.value.indexOf(hero)
+            }
+        }
+        mutableStateOf(currentIndexHero)
+    }
+
+    LaunchedEffect(Unit) {
         lazyListState.scrollToItem(currentHero.value)
     }
 
     LaunchedEffect(lazyListState.isScrollInProgress) {
-        if (!lazyListState.isScrollInProgress) {
+        if (listHeroes.value.isNotEmpty() && !lazyListState.isScrollInProgress) {
             val currentIndex = layoutInfo.currentItem?.index ?: 0
 
-            colorBackgroundHero.value =
-                listHeroes[currentIndex].colorBackground
+            colorBackgroundHeroInt.value =
+                listHeroes.value[currentIndex].colorBackground
 
             currentHero.value = currentIndex
         }
     }
 
-
     LazyRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxSize()
-            .background(shape = shapeTriangleBackground, color = colorBackgroundHero.value),
+            .background(shape = shapeTriangleBackground, color = Color(colorBackgroundHeroInt.value)),
         state = lazyListState,
         flingBehavior = rememberSnapFlingBehavior(snappingLayout),
         contentPadding = PaddingValues(horizontal = (paddingCenterCard.dp))
     )
     {
         itemsIndexed(
-            listHeroes,
+            listHeroes.value
         ) { index, item ->
-            CardHero(
-                index,
-                item,
-                paramsOrientation,
-                lazyListState,
-                navController,
-                layoutInfo,
-                paddingCenterCard
-            )
+            CardHero(index, item, paramsOrientation, lazyListState, navController,
+                layoutInfo, paddingCenterCard)
         }
-
     }
 }
 
@@ -179,6 +177,20 @@ fun LazyListLayoutInfo.normalizedItemPosition(key: Any, paddingCenterCard: Int):
             (it.offset.toFloat() - center) / (center - paddingCenterCard)
         }
         ?: 0F
+
+fun triangleBackground(): GenericShape {
+    val partHeight = 0.3f
+    val shapeTriangleBackground = GenericShape { size: Size, _ ->
+        val width = size.width
+        val height = size.height
+
+        moveTo(0f, height)
+        lineTo(width, height)
+        lineTo(width, height * partHeight)
+        close()
+    }
+    return shapeTriangleBackground
+}
 
 @Composable
 fun checkOrientation(): ParamsOrientation {
