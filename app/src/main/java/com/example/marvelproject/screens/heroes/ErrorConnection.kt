@@ -1,5 +1,6 @@
-package com.example.marvelproject.screens
+package com.example.marvelproject.screens.heroes
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Text
@@ -19,7 +20,8 @@ import com.example.marvelproject.orientation.ParamsOrientation
 fun ErrorConnection() {
     Box(
         modifier = Modifier
-            .padding(start = 15.dp, top = 30.dp),
+            .padding(start = 15.dp, top = 30.dp)
+            .background(Color.DarkGray),
         contentAlignment = Alignment.Center
     ) {
         val font = 800

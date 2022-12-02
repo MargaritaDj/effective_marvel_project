@@ -1,4 +1,4 @@
-package com.example.marvelproject.screens
+package com.example.marvelproject.screens.heroes
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
