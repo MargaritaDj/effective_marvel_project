@@ -4,6 +4,7 @@ plugins {
     id "io.gitlab.arturbosch.detekt" version "1.22.0-RC2"
     id 'kotlin-kapt'
     id 'dagger.hilt.android.plugin'
+    id 'com.google.gms.google-services'
 }
 
 android {
@@ -94,6 +95,9 @@ dependencies {
     implementation "com.google.dagger:hilt-android:2.38.1"
     implementation "androidx.fragment:fragment-ktx:1.5.4"
     implementation 'androidx.hilt:hilt-navigation-compose:1.0.0'
+    implementation platform('com.google.firebase:firebase-bom:31.1.0')
+    implementation 'com.google.firebase:firebase-analytics-ktx'
+    implementation 'com.google.firebase:firebase-messaging-ktx'
 
     kapt "com.google.dagger:hilt-compiler:2.38.1"
     kapt "androidx.room:room-compiler:2.4.3"

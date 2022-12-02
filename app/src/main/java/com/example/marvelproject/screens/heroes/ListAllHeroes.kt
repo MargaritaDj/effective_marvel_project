@@ -37,6 +37,7 @@ import coil.ImageLoader
 import coil.request.ImageRequest
 import com.example.marvelproject.R
 import com.example.marvelproject.model.Hero
+import com.example.marvelproject.navigation.Routes
 import com.example.marvelproject.orientation.ParamsOrientation
 import com.example.marvelproject.orientation.ParamsOrientationLandscape
 import com.example.marvelproject.orientation.ParamsOrientationPortrait
@@ -52,10 +53,14 @@ fun ListAllHeroes(
     navController: NavHostController,
     id: String?,
     error: Boolean,
+    idPushHero: String,
     context: Context
 ) {
     if(error){
         ErrorConnection()
+    }
+    if(idPushHero.isNotEmpty()){
+        navController.navigate(Routes.InfoCurrentHero.route + "/${idPushHero}")
     }
     if (listHeroes.isNotEmpty()) {
         Column(
