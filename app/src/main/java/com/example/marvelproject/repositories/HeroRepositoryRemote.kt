@@ -20,5 +20,15 @@ class HeroRepositoryRemote @Inject constructor(
                 return@withContext Response.Error(e.message)
             }
         }
+
+    suspend fun getHeroById(id: String): Response<HeroDtoResponse> =
+        withContext(Dispatchers.IO) {
+            try{
+                val response = marvelApiService.getHeroById(id)
+                return@withContext Response.Success("Success", response)
+            } catch (e: IOException){
+                return@withContext Response.Error(e.message)
+            }
+        }
 }
 

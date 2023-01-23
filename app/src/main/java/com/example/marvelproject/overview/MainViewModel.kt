@@ -9,6 +9,7 @@ import com.example.marvelproject.repositories.HeroRepositoryLocal
 import com.example.marvelproject.model.Hero
 import com.example.marvelproject.repositories.HeroRepositoryRemote
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import java.io.IOException
 import javax.inject.Inject
@@ -18,8 +19,8 @@ class MainViewModel @Inject constructor(
     private val repositoryLocal: HeroRepositoryLocal,
     private val repositoryRemote: HeroRepositoryRemote
 ) : ViewModel() {
-    var stateAllHeroes = MutableLiveData(MainState(listOf(), Hero(), false))
-    val stateHeroById = MutableLiveData<MainState>(stateAllHeroes.value)
+    var stateAllHeroes = MutableStateFlow(MainState(listOf(), Hero(), false))
+    val stateHeroById = MutableStateFlow(stateAllHeroes.value)
 
     private var dataLocalHeroes : LiveData<List<Hero>> = repositoryLocal.allHeroes.asLiveData()
     private var allHeroesDatabase = MutableLiveData<List<Hero>>(listOf())
@@ -72,8 +73,14 @@ class MainViewModel @Inject constructor(
 
     private fun getHeroById(id: String) {
         viewModelScope.launch {
+            val result = repositoryRemote.getHeroById(id)
+            if (result.message.equals("Success")) {
+                stateHeroById.value = MainState(stateHeroById.value!!.allHeroes,
+                    result.data?.data?.results?.get(0)?.toHero() ?: Hero(), stateHeroById.value!!.error)
+            } else {
             stateHeroById.value = MainState(stateHeroById.value!!.allHeroes,
                 repositoryLocal.getHeroById(id), stateHeroById.value!!.error)
+            }
         }
     }
 
