@@ -16,6 +16,9 @@ interface HeroDao {
     @Query("SELECT * FROM heroes_table")
     fun getAllHeroes(): Flow<List<Hero>>
 
+    @Query("SELECT * FROM heroes_table WHERE id=:id ")
+    suspend fun getHeroById(id: String): Hero
+
     @Query("DELETE FROM heroes_table")
     suspend fun deleteAll()
 

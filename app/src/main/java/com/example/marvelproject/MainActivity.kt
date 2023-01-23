@@ -3,49 +3,59 @@ package com.example.marvelproject
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
-import com.example.marvelproject.database.HeroApplication
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.lifecycle.asLiveData
 import com.example.marvelproject.navigation.AppNavigation
 import com.example.marvelproject.model.Hero
-import com.example.marvelproject.overview.DatabaseViewModel
-import com.example.marvelproject.overview.OverviewViewModel
+import com.example.marvelproject.overview.GetHeroesEvent
+import com.example.marvelproject.overview.MainViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        val viewModel = OverviewViewModel()
-        val viewModelDB = DatabaseViewModel((application as HeroApplication).repository)
+        val mainModel: MainViewModel by viewModels()
         super.onCreate(savedInstanceState)
+        mainModel.send(GetHeroesEvent())
         setContent {
             val listHeroes = rememberSaveable { mutableStateOf(listOf<Hero>()) }
-            val isError = rememberSaveable { mutableStateOf(false) }
+            val error = rememberSaveable { mutableStateOf(false) }
+            mainModel.stateAllHeroes.asLiveData().observe(this) { state ->
+                if (state.error) {
+                    error.value = true
+                } else {
+                    listHeroes.value = state.allHeroes
+                }
+            }
+            AppNavigation(listHeroes.value, error.value, this)
 
-            viewModel.heroesListResponse.observe(this) {
-                listHeroes.value = viewModel.heroesListResponse.value?.data?.results
-                    ?.map{ it.toHero(this) } ?: listOf()
-                viewModelDB.deleteAll()
-                for(hero in listHeroes.value){
-                    viewModelDB.insert(hero)
-                }
-            }
-            viewModel.status.observe(this) {
-                if(!viewModel.status.value.equals("Success")){
-                    isError.value = true
-                }
-            }
-            viewModelDB.allHeroes.observe(this) { heroes ->
-                println("Size = " + heroes.size)
-                if(isError.value && heroes.isNotEmpty() && listHeroes.value.isEmpty()){
-                    listHeroes.value = heroes ?: listOf()
-                    println("List: " + listHeroes.value.size)
-                    isError.value = false
-                }
-            }
-            AppNavigation(listHeroes.value)
         }
     }
+
+   /* @Composable
+    fun splashScreen(){
+        Box(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth()
+        ){
+            Image(
+                painter = painterResource(R.drawable.logo_placeholder),
+                contentDescription = "splash",
+                contentScale = ContentScale.Fit
+            )
+        }
+    }*/
 }
 
 

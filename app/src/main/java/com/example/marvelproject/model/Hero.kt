@@ -1,12 +1,13 @@
 package com.example.marvelproject.model
 
-import androidx.compose.ui.graphics.Color
+import android.os.Parcelable
 import androidx.compose.ui.graphics.toArgb
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 import com.example.marvelproject.ui.theme.DarkRed
-import com.squareup.moshi.Json
+import kotlinx.android.parcel.Parcelize
 
+@Parcelize
 @Entity(tableName = "heroes_table")
 data class Hero(
     @PrimaryKey var id: String = "",
@@ -14,4 +15,4 @@ data class Hero(
     var description : String = "I am $name",
     var pathImage : String = "",
     var colorBackground : Int = DarkRed.toArgb()
-)
+): Parcelable

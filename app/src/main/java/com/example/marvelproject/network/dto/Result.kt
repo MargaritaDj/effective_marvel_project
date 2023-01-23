@@ -1,14 +1,6 @@
 package com.example.marvelproject.network.dto
 
-import android.content.Context
-import android.graphics.drawable.BitmapDrawable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.palette.graphics.Palette
-import coil.ImageLoader
-import coil.request.ImageRequest
 import com.example.marvelproject.model.Hero
-import com.example.marvelproject.overview.OverviewViewModel
 import com.squareup.moshi.Json
 
 data class Result(
@@ -18,7 +10,7 @@ data class Result(
     @Json(name = "thumbnail") val thumbnail: Thumbnail,
 ) {
 
-    fun toHero(context: Context?): Hero {
+    fun toHero(): Hero {
         val path = thumbnail.path.substring(4)
         val extension = thumbnail.extension
         val url = "https$path.$extension"
@@ -33,29 +25,6 @@ data class Result(
             hero.description = description
         }
 
-        getColorBackgroundImage(context, hero)
-
         return hero
-    }
-
-    private fun getColorBackgroundImage(context: Context?, hero: Hero) {
-        if (context != null) {
-            val loader = ImageLoader(context)
-            val request = ImageRequest.Builder(context)
-                .data(hero.pathImage)
-                .target(
-                    onSuccess = { res ->
-                        val bitmap = (res as BitmapDrawable).bitmap
-                        Palette.from(bitmap).generate { palette ->
-                            val colorArgb =
-                                palette?.darkVibrantSwatch?.rgb ?: hero.colorBackground
-                            hero.colorBackground = colorArgb
-                        }
-                    }
-                )
-                .allowHardware(false)
-                .build()
-            loader.enqueue(request)
-        }
     }
 }
