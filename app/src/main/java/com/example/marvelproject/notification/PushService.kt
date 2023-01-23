@@ -14,9 +14,7 @@ class PushService: FirebaseMessagingService() {
 
     override fun onMessageReceived(message: RemoteMessage) {
         val intent = Intent(this, MainActivity::class.java)
-        message.notification?.clickAction
         intent.putExtra("id", message.notification?.body ?: "")
-        sendBroadcast(intent)
     }
 
 }

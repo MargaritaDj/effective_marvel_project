@@ -11,10 +11,10 @@ import javax.inject.Inject
 class HeroRepositoryRemote @Inject constructor(
     private val marvelApiService: MarvelApiService
 ) {
-    suspend fun refreshHeroes(): Response<HeroDtoResponse> =
+    suspend fun refreshHeroes(page: Int): Response<HeroDtoResponse> =
         withContext(Dispatchers.IO) {
             try{
-                val response = marvelApiService.getHeroes()
+                val response = marvelApiService.getHeroes(page*10)
                 return@withContext Response.Success("Success", response)
             } catch (e: IOException){
                 return@withContext Response.Error(e.message)

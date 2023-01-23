@@ -9,7 +9,8 @@ import retrofit2.http.Query
 interface MarvelApiService{
     @GET("v1/public/characters")
     suspend fun getHeroes(
-        @Query("limit") limit : Int = 40
+        @Query("offset") offset: Int,
+        @Query("limit") limit : Int = 10
     ): HeroDtoResponse
 
     @GET("/v1/public/characters/{id}")

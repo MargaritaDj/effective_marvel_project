@@ -18,8 +18,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.paging.ItemSnapshotList
+import androidx.paging.LoadState
+import androidx.paging.compose.LazyPagingItems
+import androidx.paging.compose.items
 import com.example.marvelproject.model.Hero
 import com.example.marvelproject.orientation.ParamsOrientation
+import com.example.marvelproject.screens.state.ErrorItem
+import com.example.marvelproject.screens.state.LoadingItem
+import com.example.marvelproject.screens.state.LoadingView
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
 import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
 
@@ -27,7 +34,9 @@ import dev.chrisbanes.snapper.LazyListSnapperLayoutInfo
 @Composable
 fun LazyRowCards(navController: NavHostController, lazyListState: LazyListState,
                  layoutInfo: LazyListSnapperLayoutInfo, colorBackgroundHeroInt: MutableState<Int>,
-                 listHeroes: MutableState<List<Hero>>
+    listHeroes: List<Hero>
+                 //listHeroes: MutableState<List<Hero>>
+                 // listHeroes: MutableState<ItemSnapshotList<Hero>>
 ){
     val shapeTriangleBackground = triangleBackground()
     val snappingLayout = remember(lazyListState) { SnapLayoutInfoProvider(lazyListState) }
@@ -49,13 +58,62 @@ fun LazyRowCards(navController: NavHostController, lazyListState: LazyListState,
         contentPadding = PaddingValues(horizontal = (paddingCenterCard.dp))
     )
     {
-        itemsIndexed(
+        /*itemsIndexed(
             listHeroes.value
         ) { index, item ->
             CardHero(
                 index, item, paramsOrientation, lazyListState, navController,
                 layoutInfo, paddingCenterCard
             )
+        }*/
+
+        itemsIndexed(
+            listHeroes
+        ) { index, item ->
+            CardHero(
+                index, item, paramsOrientation, lazyListState, navController,
+                layoutInfo, paddingCenterCard
+            )
         }
+
+        /*listHeroes.apply {
+            when {
+                loadState.refresh is LoadState.Loading -> {
+                    item { LoadingView(modifier = Modifier.fillParentMaxSize()) }
+                }
+                loadState.append is LoadState.Loading -> {
+                    item { LoadingItem() }
+                }
+                loadState.refresh is LoadState.Error -> {
+                    val e = listHeroes.loadState.refresh as LoadState.Error
+                    item {
+                        ErrorItem(
+                            message = e.error.localizedMessage!!,
+                            modifier = Modifier.fillParentMaxSize(),
+                            onClickRetry = { retry() }
+                        )
+                    }
+                }
+                loadState.append is LoadState.Error -> {
+                    val e = listHeroes.loadState.append as LoadState.Error
+                    item {
+                        ErrorItem(
+                            message = e.error.localizedMessage!!,
+                            onClickRetry = { retry() }
+                        )
+                    }
+                }
+            }
+        }*/
+
+        /*itemsIndexed(
+            //listHeroes.value
+            listHeroes
+        ) { index, item ->
+            CardHero(
+                index, item ?: Hero(), paramsOrientation, lazyListState, navController,
+                layoutInfo, paddingCenterCard
+            )
+        }*/
     }
 }

@@ -15,10 +15,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.shape.GenericShape
+import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -31,7 +30,12 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import androidx.navigation.NavHostController
+import androidx.paging.ItemSnapshotList
+import androidx.paging.compose.collectAsLazyPagingItems
 import androidx.palette.graphics.Palette
 import coil.ImageLoader
 import coil.request.ImageRequest
@@ -41,6 +45,7 @@ import com.example.marvelproject.navigation.Routes
 import com.example.marvelproject.orientation.ParamsOrientation
 import com.example.marvelproject.orientation.ParamsOrientationLandscape
 import com.example.marvelproject.orientation.ParamsOrientationPortrait
+import com.example.marvelproject.overview.MainViewModel
 import com.example.marvelproject.ui.theme.DarkGrey
 import com.example.marvelproject.ui.theme.DarkRed
 import dev.chrisbanes.snapper.ExperimentalSnapperApi
@@ -53,16 +58,12 @@ fun ListAllHeroes(
     navController: NavHostController,
     id: String?,
     error: Boolean,
-    idPushHero: String,
     context: Context
 ) {
     if(error){
         ErrorConnection()
     }
-    if(idPushHero.isNotEmpty()){
-        navController.navigate(Routes.InfoCurrentHero.route + "/${idPushHero}")
-    }
-    if (listHeroes.isNotEmpty()) {
+    //if (listHeroes.isNotEmpty()) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -70,9 +71,17 @@ fun ListAllHeroes(
         ) {
             Logo(R.drawable.marvel)
             Title("Choose your hero")
+
+            /*when {
+                listBase.items.isEmpty() -> CircularProgressIndicator()
+                else -> {
+                    ListHeroes(listBase, navController, id, context)
+                }
+            }*/
+
             ListHeroes(listHeroes, navController, id, context)
         }
-    }
+   // }
 
 }
 
@@ -115,24 +124,31 @@ fun Title(title: String) {
 
 @OptIn(ExperimentalSnapperApi::class)
 @Composable
-fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController, id: String?, context: Context) {
+fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController,
+               id: String?, context: Context) {
 
     val lazyListState: LazyListState = rememberLazyListState()
     val layoutInfo: LazyListSnapperLayoutInfo = rememberLazyListSnapperLayoutInfo(lazyListState)
+
+    val mainModel: MainViewModel = hiltViewModel()
+    val listBase = mainModel.heroesPager.collectAsLazyPagingItems()
+    val list = listBase.itemSnapshotList
 
     val colorBackgroundHeroInt = rememberSaveable {
         mutableStateOf(DarkRed.toArgb())
     }
 
-    val listHeroes = rememberSaveable {
+   /* val listHeroes = rememberSaveable {
         mutableStateOf(listHeroesResponse)
-    }
+    }*/
+
+   // val listHeroes = listHeroesResponse
 
     val currentHero = rememberSaveable {
         var currentIndexHero = 0
-        for (hero in listHeroes.value) {
-            if (hero.id == id) {
-                currentIndexHero = listHeroes.value.indexOf(hero)
+        for (hero in list) {
+            if (hero?.id == id) {
+                currentIndexHero = list.indexOf(hero)
             }
         }
         mutableStateOf(currentIndexHero)
@@ -142,27 +158,27 @@ fun ListHeroes(listHeroesResponse: List<Hero>, navController: NavHostController,
         lazyListState.scrollToItem(currentHero.value)
         val listVisible = lazyListState.layoutInfo.visibleItemsInfo
         for(hero in listVisible){
-            changeColor(context, listHeroes.value[hero.index])
+            changeColor(context, list[hero.index] ?: Hero())
         }
     }
 
     LaunchedEffect(lazyListState.isScrollInProgress) {
-        if (listHeroes.value.isNotEmpty() && !lazyListState.isScrollInProgress) {
+        if (list.isNotEmpty() && !lazyListState.isScrollInProgress) {
             val currentIndex = layoutInfo.currentItem?.index ?: 0
 
             val listVisible = lazyListState.layoutInfo.visibleItemsInfo
             for(hero in listVisible){
-                changeColor(context, listHeroes.value[hero.index])
+                changeColor(context, list[hero.index] ?: Hero())
             }
 
             colorBackgroundHeroInt.value =
-                listHeroes.value[currentIndex].colorBackground
+                list[currentIndex]?.colorBackground ?: DarkRed.toArgb()
 
             currentHero.value = currentIndex
         }
     }
 
-    LazyRowCards(navController, lazyListState, layoutInfo, colorBackgroundHeroInt, listHeroes)
+    LazyRowCards(navController, lazyListState, layoutInfo, colorBackgroundHeroInt, list.items)
 }
 
 fun LazyListLayoutInfo.normalizedItemPosition(key: Any, paddingCenterCard: Int): Float =
